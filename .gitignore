@@ -1,0 +1,43 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Build output
+dist/
+build/
+coverage/
+**/.next/
+**/out/
+**/.expo/
+**/web-build/
+
+# Native/mobile generated output
+**/ios/
+**/android/
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+expo-env.d.ts
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
