@@ -1,11 +1,11 @@
 /**
  * routes/bed.routes.js — Bed Routes
  *
- * POST   /api/beds               — Create bed
+ * POST   /api/beds               — Create bed (owner only)
  * GET    /api/beds               — List beds (filtered)
  * GET    /api/beds/:id           — Get single bed
- * PATCH  /api/beds/:id           — Update bed details
- * PATCH  /api/beds/:id/status    — Update bed status only
+ * PATCH  /api/beds/:id           — Update bed details (owner only)
+ * PATCH  /api/beds/:id/status    — Update bed status only (owner only)
  * DELETE /api/beds/:id           — Delete bed (owner only)
  */
 
@@ -27,7 +27,7 @@ router
   .route("/:id")
   .get(protect, allowRoles("owner", "manager"), getBedById)
   .patch(protect, allowRoles("owner", "manager"), updateBed)
-  .delete(protect, allowRoles("owner"), deleteBed);
+  .delete(protect, allowRoles("owner", "manager"), deleteBed);
 
 // Status-only update endpoint
 router.patch("/:id/status", protect, allowRoles("owner", "manager"), updateBedStatus);

@@ -27,7 +27,7 @@ function HomeTab() {
 const tabs = [
   { key: 'home', label: 'Home', component: HomeTab },
   { key: 'rent', label: 'Rent', component: MyRentScreen },
-  { key: 'complaints', label: 'Complaints', component: ComplaintStatusScreen },
+  { key: 'complaints', label: 'Queries', component: ComplaintStatusScreen },
   { key: 'profile', label: 'Profile', component: ProfileScreen },
 ];
 

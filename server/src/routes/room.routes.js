@@ -1,10 +1,10 @@
 /**
  * routes/room.routes.js — Room Routes
  *
- * POST   /api/rooms       — Create room (owner, manager)
+ * POST   /api/rooms       — Create room (owner only)
  * GET    /api/rooms       — List rooms with filters (owner, manager)
  * GET    /api/rooms/:id   — Get single room (owner, manager)
- * PATCH  /api/rooms/:id   — Update room (owner, manager)
+ * PATCH  /api/rooms/:id   — Update room (owner only)
  * DELETE /api/rooms/:id   — Delete room (owner only)
  */
 
@@ -25,6 +25,6 @@ router
   .route("/:id")
   .get(protect, allowRoles("owner", "manager"), getRoomById)
   .patch(protect, allowRoles("owner", "manager"), updateRoom)
-  .delete(protect, allowRoles("owner"), deleteRoom);
+  .delete(protect, allowRoles("owner", "manager"), deleteRoom);
 
 module.exports = router;

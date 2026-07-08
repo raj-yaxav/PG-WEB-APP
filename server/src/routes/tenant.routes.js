@@ -15,9 +15,13 @@ const router = express.Router();
 const {
   createTenant, getTenants, getTenantById,
   updateTenant, assignBed, markTenantLeft, deleteTenant,
+  getMyRoom,
 } = require("../controllers/tenant.controller");
 const { protect } = require("../middleware/auth.middleware");
 const { allowRoles } = require("../middleware/role.middleware");
+
+// Tenant's own room details
+router.get("/me/room", protect, allowRoles("tenant"), getMyRoom);
 
 router
   .route("/")
@@ -28,7 +32,7 @@ router
   .route("/:id")
   .get(protect, allowRoles("owner", "manager"), getTenantById)
   .patch(protect, allowRoles("owner", "manager"), updateTenant)
-  .delete(protect, allowRoles("owner"), deleteTenant);
+  .delete(protect, allowRoles("owner", "manager"), deleteTenant);
 
 // Business action routes
 router.patch("/:id/assign-bed", protect, allowRoles("owner", "manager"), assignBed);

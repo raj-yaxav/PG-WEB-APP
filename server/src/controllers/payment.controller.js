@@ -19,6 +19,7 @@
 const asyncHandler = require("express-async-handler");
 const Payment = require("../models/Payment");
 const Invoice = require("../models/Invoice");
+const Tenant = require("../models/Tenant");
 const { successResponse } = require("../utils/apiResponse");
 const { getPagination, getPaginationMeta } = require("../utils/pagination");
 
@@ -91,9 +92,17 @@ const getPayments = asyncHandler(async (req, res) => {
   const { tenantId, invoiceId, propertyId } = req.query;
 
   const filter = {};
-  if (tenantId) filter.tenantId = tenantId;
+
+  // Tenants can only see their own payments
+  if (req.user.role === "tenant") {
+    const tenant = await Tenant.findOne({ userId: req.user._id }).select("_id").lean();
+    if (tenant) filter.tenantId = tenant._id;
+  } else {
+    if (tenantId) filter.tenantId = tenantId;
+    if (propertyId) filter.propertyId = propertyId;
+  }
+
   if (invoiceId) filter.invoiceId = invoiceId;
-  if (propertyId) filter.propertyId = propertyId;
 
   const [payments, total] = await Promise.all([
     Payment.find(filter)

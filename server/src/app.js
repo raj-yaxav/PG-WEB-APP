@@ -26,6 +26,7 @@ const tenantRoutes = require("./routes/tenant.routes");
 const invoiceRoutes = require("./routes/invoice.routes");
 const paymentRoutes = require("./routes/payment.routes");
 const complaintRoutes = require("./routes/complaint.routes");
+const reportRoutes = require("./routes/report.routes");
 const dashboardRoutes = require("./routes/dashboard.routes");
 const uploadRoutes = require("./routes/upload.routes");
 
@@ -58,6 +59,7 @@ app.use("/api/tenants", tenantRoutes);
 app.use("/api/invoices", invoiceRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/complaints", complaintRoutes);
+app.use("/api/reports", reportRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/uploads", uploadRoutes);
 

@@ -14,6 +14,7 @@
 
 const asyncHandler = require("express-async-handler");
 const Room = require("../models/Room");
+const Bed = require("../models/Bed");
 const { successResponse } = require("../utils/apiResponse");
 const { getPagination, getPaginationMeta } = require("../utils/pagination");
 
@@ -28,6 +29,12 @@ const createRoom = asyncHandler(async (req, res) => {
   if (!propertyId || !roomNumber || !rentPerBed) {
     res.status(400);
     throw new Error("propertyId, roomNumber, and rentPerBed are required");
+  }
+
+  const existing = await Room.findOne({ propertyId, roomNumber });
+  if (existing) {
+    res.status(409);
+    throw new Error(`Room ${roomNumber} already exists in this property`);
   }
 
   const room = await Room.create({
@@ -62,9 +69,10 @@ const getRooms = asyncHandler(async (req, res) => {
     Room.find(filter)
       .select("-__v")
       .populate("propertyId", "name city")
+      .populate({ path: "beds", populate: { path: "tenantId", select: "name phone" } })
       .skip(skip)
       .limit(limit)
-      .lean(),
+      .lean({ virtuals: true }),
     Room.countDocuments(filter),
   ]);
 
@@ -81,8 +89,9 @@ const getRooms = asyncHandler(async (req, res) => {
 const getRoomById = asyncHandler(async (req, res) => {
   const room = await Room.findById(req.params.id)
     .populate("propertyId", "name city address")
+    .populate({ path: "beds", populate: { path: "tenantId", select: "name phone" } })
     .select("-__v")
-    .lean();
+    .lean({ virtuals: true });
 
   if (!room) {
     res.status(404);
@@ -112,6 +121,15 @@ const updateRoom = asyncHandler(async (req, res) => {
     }
   });
 
+  // If roomNumber was changed, check no duplicate in same property
+  if (req.body.roomNumber && String(req.body.roomNumber) !== String(room.roomNumber)) {
+    const dup = await Room.findOne({ propertyId: room.propertyId, roomNumber: req.body.roomNumber, _id: { $ne: room._id } });
+    if (dup) {
+      res.status(409);
+      throw new Error(`Room ${req.body.roomNumber} already exists in this property`);
+    }
+  }
+
   await room.save();
   res.status(200).json(successResponse("Room updated successfully", room));
 });
@@ -127,6 +145,12 @@ const deleteRoom = asyncHandler(async (req, res) => {
   if (!room) {
     res.status(404);
     throw new Error("Room not found");
+  }
+
+  const bedCount = await Bed.countDocuments({ roomId: room._id });
+  if (bedCount > 0) {
+    res.status(400);
+    throw new Error(`Cannot delete room: remove all ${bedCount} bed(s) first`);
   }
 
   await room.deleteOne();

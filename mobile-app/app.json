@@ -19,6 +19,13 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-font"
+    ],
+    "extra": {
+      "apiHost": "192.168.4.60",
+      "apiPort": 5000
     }
   }
 }

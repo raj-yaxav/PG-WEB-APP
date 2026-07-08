@@ -46,7 +46,7 @@ export function LoginScreen({ onLogin }) {
         - Keep layout centered and tenant-friendly.
       */}
       <View style={styles.card}>
-        <Text style={styles.logo}>PG Manager</Text>
+        <Text style={styles.logo}>Welcome to Roomzy</Text>
         <Text style={styles.subtitle}>Tenant Portal</Text>
         <TextInput
           value={phone}

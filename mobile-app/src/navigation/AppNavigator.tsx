@@ -3,7 +3,7 @@
  * Switches between Auth and Main App
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
 import { AuthNavigator } from './AuthNavigator';
 import { HomeScreen } from '../components/dashboard/HomeScreen';
@@ -23,11 +23,20 @@ export function AppNavigator() {
   async function checkAuth() {
     try {
       const authenticated = await AuthService.isAuthenticated();
-      const storedUser = authenticated ? await AuthService.getUser() : null;
-      setIsAuthenticated(authenticated);
-      setUser(storedUser);
+      if (!authenticated) {
+        setIsAuthenticated(false);
+        setUser(null);
+        return;
+      }
+
+      const refreshedUser = await AuthService.refreshUserFromServer();
+      setIsAuthenticated(Boolean(refreshedUser));
+      setUser(refreshedUser);
     } catch (error) {
       console.error('Auth check failed:', error);
+      await AuthService.logout();
+      setIsAuthenticated(false);
+      setUser(null);
     } finally {
       setIsLoading(false);
     }
@@ -38,6 +47,26 @@ export function AppNavigator() {
     setUser(storedUser);
     setIsAuthenticated(true);
   }
+
+  const handleUserUpdate = useCallback((nextUser: User) => {
+    setUser((currentUser) => {
+      const mergedUser = currentUser
+        ? {
+            ...currentUser,
+            ...nextUser,
+            id: nextUser.id || currentUser.id,
+            role: nextUser.role || currentUser.role,
+            status: nextUser.status || currentUser.status,
+          }
+        : nextUser;
+
+      AuthService.updateUser(mergedUser).catch((error) => {
+        console.error('Failed to persist updated user:', error);
+      });
+
+      return mergedUser;
+    });
+  }, []);
 
   async function handleLogout() {
     await AuthService.logout();
@@ -58,7 +87,7 @@ export function AppNavigator() {
     return <AuthNavigator onAuthSuccess={handleAuthSuccess} />;
   }
 
-  return <HomeScreen user={user} onLogout={handleLogout} />;
+  return <HomeScreen user={user} onLogout={handleLogout} onUserUpdate={handleUserUpdate} />;
 }
 
 const styles = StyleSheet.create({

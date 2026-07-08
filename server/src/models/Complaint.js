@@ -35,7 +35,7 @@ const complaintSchema = new mongoose.Schema(
     category: {
       type: String,
       enum: {
-        values: ["electricity", "water", "wifi", "cleaning", "food", "furniture", "other"],
+        values: ["electricity", "water", "wifi", "cleaning", "food", "furniture", "request", "update", "other"],
         message: "Invalid complaint category",
       },
       required: [true, "Category is required"],

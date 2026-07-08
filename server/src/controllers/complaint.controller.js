@@ -17,25 +17,39 @@
 
 const asyncHandler = require("express-async-handler");
 const Complaint = require("../models/Complaint");
+const Tenant = require("../models/Tenant");
 const { successResponse } = require("../utils/apiResponse");
 const { getPagination, getPaginationMeta } = require("../utils/pagination");
 
 /**
  * @desc    Create a new complaint
  * @route   POST /api/complaints
- * @access  Protected (tenant, owner, manager)
+ * @access  Protected (tenant)
  */
 const createComplaint = asyncHandler(async (req, res) => {
-  const { tenantId, propertyId, roomId, category, title, description, imageUrl } = req.body;
+  const { category, title, description, imageUrl } = req.body;
 
-  if (!tenantId || !propertyId || !category || !title) {
+  if (req.user.role !== "tenant") {
+    res.status(403);
+    throw new Error("Only tenants can raise complaints. Managers should send reports to the owner.");
+  }
+
+  if (!category || !title) {
     res.status(400);
-    throw new Error("tenantId, propertyId, category, and title are required");
+    throw new Error("Category and title are required");
+  }
+
+  const tenant = await findTenantForUser(req.user);
+
+  if (!tenant) {
+    res.status(404);
+    throw new Error("Tenant profile is not linked to this login. Please ask the owner or manager to update the tenant record.");
   }
 
   const complaint = await Complaint.create({
-    tenantId, propertyId,
-    roomId: roomId || null,
+    tenantId: tenant._id,
+    propertyId: tenant.propertyId,
+    roomId: tenant.roomId || null,
     category, title,
     description: description || null,
     imageUrl: imageUrl || null,
@@ -60,9 +74,8 @@ const getComplaints = asyncHandler(async (req, res) => {
   // - Tenants only see their own complaints
   // - Owner/Manager can filter by any param
   if (req.user.role === "tenant") {
-    // Tenant must provide their tenantId or we restrict by userId
-    // For MVP simplicity: tenant must pass their tenantId in query
-    if (tenantId) filter.tenantId = tenantId;
+    const tenant = await findTenantForUser(req.user);
+    filter.tenantId = tenant?._id || null;
   } else {
     if (tenantId) filter.tenantId = tenantId;
     if (propertyId) filter.propertyId = propertyId;
@@ -88,6 +101,14 @@ const getComplaints = asyncHandler(async (req, res) => {
     successResponse("Complaints fetched successfully", complaints, getPaginationMeta(page, limit, total))
   );
 });
+
+async function findTenantForUser(user) {
+  const lookup = [{ userId: user._id }];
+  if (user.phone) lookup.push({ phone: user.phone });
+  if (user.email) lookup.push({ email: user.email });
+
+  return Tenant.findOne({ $or: lookup }).select("_id propertyId roomId").lean();
+}
 
 /**
  * @desc    Get a single complaint by ID

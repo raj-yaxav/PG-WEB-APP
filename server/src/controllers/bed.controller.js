@@ -18,6 +18,7 @@
 
 const asyncHandler = require("express-async-handler");
 const Bed = require("../models/Bed");
+const Tenant = require("../models/Tenant");
 const { successResponse } = require("../utils/apiResponse");
 const { getPagination, getPaginationMeta } = require("../utils/pagination");
 
@@ -141,6 +142,11 @@ const updateBedStatus = asyncHandler(async (req, res) => {
     );
   }
 
+  if (status === "occupied" && !bed.tenantId) {
+    res.status(400);
+    throw new Error("Cannot mark a bed occupied manually. Assign a tenant to this vacant bed instead.");
+  }
+
   bed.status = status;
   await bed.save();
 
@@ -153,16 +159,27 @@ const updateBedStatus = asyncHandler(async (req, res) => {
  * @access  Protected (owner)
  */
 const deleteBed = asyncHandler(async (req, res) => {
-  const bed = await Bed.findById(req.params.id);
+  const bed = await Bed.findById(req.params.id).populate("tenantId", "name phone");
 
   if (!bed) {
     res.status(404);
     throw new Error("Bed not found");
   }
 
-  if (bed.status === "occupied") {
+  if (bed.tenantId) {
     res.status(400);
-    throw new Error("Cannot delete an occupied bed. Please mark tenant as left first.");
+    throw new Error(`Cannot delete this bed because it is assigned to ${bed.tenantId.name || "a tenant"}. Remove the tenant assignment first.`);
+  }
+
+  const linkedTenant = await Tenant.findOne({ bedId: bed._id, status: { $ne: "left" } }).select("name phone").lean();
+  if (linkedTenant) {
+    res.status(400);
+    throw new Error(`Cannot delete this bed because it is linked to ${linkedTenant.name || "an active tenant"}. Remove the tenant assignment first.`);
+  }
+
+  if (bed.status !== "vacant") {
+    res.status(400);
+    throw new Error(`Only vacant beds can be deleted. Current status is ${bed.status}.`);
   }
 
   await bed.deleteOne();

@@ -7,10 +7,12 @@ import { Spacing, BorderRadius, FontSize, FontWeight } from '../../constants/spa
 interface Manager {
   name: string;
   label: string;
-  avatar: string;
+  avatar?: string;
 }
 
 interface LivingSpaceProps {
+  title?: string;
+  contactLabel?: string;
   propertyName: string;
   roomInfo: string;
   roomType: string;
@@ -20,6 +22,8 @@ interface LivingSpaceProps {
 }
 
 export function LivingSpace({
+  title = 'Living Space',
+  contactLabel = 'Contact Admin',
   propertyName,
   roomInfo,
   roomType,
@@ -27,10 +31,19 @@ export function LivingSpace({
   manager,
   onContactPress,
 }: LivingSpaceProps) {
+  const managerName = manager.name?.trim() || 'Property Team';
+  const managerInitials = managerName
+    .split(' ')
+    .filter(Boolean)
+    .map((part) => part[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2);
+
   return (
     <View style={styles.container}>
       <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>Living Space</Text>
+        <Text style={styles.sectionTitle}>{title}</Text>
         <MaterialCommunityIcons name="dots-horizontal" size={24} color={Colors.textTertiary} />
       </View>
 
@@ -46,17 +59,21 @@ export function LivingSpace({
       <View style={styles.grid}>
         <View style={styles.managerCard}>
           <View style={styles.managerAvatar}>
-            <Image source={{ uri: manager.avatar }} style={styles.managerAvatarImage} />
+            {manager.avatar ? (
+              <Image source={{ uri: manager.avatar }} style={styles.managerAvatarImage} />
+            ) : (
+              <Text style={styles.managerAvatarText}>{managerInitials}</Text>
+            )}
           </View>
           <Text style={styles.managerLabel}>{manager.label}</Text>
-          <Text style={styles.managerName}>{manager.name}</Text>
+          <Text style={styles.managerName}>{managerName}</Text>
         </View>
 
-        <Pressable onPress={onContactPress} style={styles.contactCard}>
+        <Pressable onPress={onContactPress} style={({ pressed }) => [styles.contactCard, pressed && styles.contactCardPressed]}>
           <View style={styles.contactIconContainer}>
             <MaterialCommunityIcons name="headset" size={20} color={Colors.primary} />
           </View>
-          <Text style={styles.contactText}>Contact Admin</Text>
+          <Text style={styles.contactText}>{contactLabel}</Text>
         </Pressable>
       </View>
     </View>
@@ -82,17 +99,22 @@ const styles = StyleSheet.create({
   propertyCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.surface,
-    borderRadius: BorderRadius.xl,
+    backgroundColor: '#E2F0FF',
+    borderRadius: BorderRadius['2xl'],
     padding: Spacing.md,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: 'rgba(255,255,255,0.78)',
     marginBottom: Spacing.md,
+    shadowColor: Colors.shadowDeep,
+    shadowOpacity: 0.65,
+    shadowRadius: 14,
+    shadowOffset: { width: 7, height: 9 },
+    elevation: 4,
   },
   propertyImage: {
     width: 64,
     height: 64,
-    borderRadius: BorderRadius.lg,
+    borderRadius: BorderRadius.xl,
     marginRight: Spacing.md,
   },
   propertyInfo: {
@@ -121,11 +143,16 @@ const styles = StyleSheet.create({
   },
   managerCard: {
     flex: 1,
-    backgroundColor: Colors.surface,
-    borderRadius: BorderRadius.xl,
+    backgroundColor: '#E2F0FF',
+    borderRadius: BorderRadius['2xl'],
     padding: Spacing.md,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: 'rgba(255,255,255,0.78)',
+    shadowColor: Colors.shadowDeep,
+    shadowOpacity: 0.58,
+    shadowRadius: 12,
+    shadowOffset: { width: 6, height: 8 },
+    elevation: 3,
   },
   managerAvatar: {
     width: 40,
@@ -142,6 +169,11 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: 20,
   },
+  managerAvatarText: {
+    fontSize: FontSize.sm,
+    color: Colors.primaryDark,
+    fontWeight: FontWeight.extrabold,
+  },
   managerLabel: {
     fontSize: FontSize.xs,
     color: Colors.textTertiary,
@@ -155,13 +187,22 @@ const styles = StyleSheet.create({
   },
   contactCard: {
     flex: 1,
-    backgroundColor: Colors.surface,
-    borderRadius: BorderRadius.xl,
+    backgroundColor: '#E2F0FF',
+    borderRadius: BorderRadius['2xl'],
     padding: Spacing.md,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: 'rgba(255,255,255,0.78)',
     alignItems: 'center',
     justifyContent: 'center',
+    shadowColor: Colors.shadowDeep,
+    shadowOpacity: 0.58,
+    shadowRadius: 12,
+    shadowOffset: { width: 6, height: 8 },
+    elevation: 3,
+  },
+  contactCardPressed: {
+    opacity: 0.85,
+    transform: [{ scale: 0.98 }],
   },
   contactIconContainer: {
     width: 40,

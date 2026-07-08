@@ -25,8 +25,26 @@
 const asyncHandler = require("express-async-handler");
 const Tenant = require("../models/Tenant");
 const Bed = require("../models/Bed");
+const Room = require("../models/Room");
+const Property = require("../models/Property");
+const User = require("../models/User");
 const { successResponse } = require("../utils/apiResponse");
 const { getPagination, getPaginationMeta } = require("../utils/pagination");
+
+async function generateTenantLoginId() {
+  for (let attempt = 0; attempt < 8; attempt += 1) {
+    const loginId = `TEN-${Math.floor(1000 + Math.random() * 9000)}`;
+    const existing = await User.exists({ loginId });
+    if (!existing) return loginId;
+  }
+
+  return `TEN-${Date.now().toString().slice(-6)}`;
+}
+
+function getOccupiedBedMessage(bed) {
+  const tenantName = bed.tenantId?.name || "another tenant";
+  return `Bed ${bed.bedNumber} is already assigned to ${tenantName}. Please select a vacant bed.`;
+}
 
 /**
  * @desc    Create a new tenant
@@ -39,7 +57,7 @@ const createTenant = asyncHandler(async (req, res) => {
     name, phone, email,
     guardianPhone, emergencyContact, permanentAddress,
     rentAmount, securityDeposit, joiningDate,
-    profilePhotoUrl, kycDocumentUrl,
+    profilePhotoUrl, kycDocumentUrl, loginId, password,
   } = req.body;
 
   if (!propertyId || !name || !phone || !rentAmount) {
@@ -47,9 +65,66 @@ const createTenant = asyncHandler(async (req, res) => {
     throw new Error("propertyId, name, phone, and rentAmount are required");
   }
 
+  const propertyBedCount = await Bed.countDocuments({ propertyId });
+  if (propertyBedCount === 0) {
+    res.status(400);
+    throw new Error("This property has no beds. Add rooms and beds before adding a tenant.");
+  }
+
+  if (!bedId) {
+    res.status(400);
+    throw new Error("Select a vacant bed before adding a tenant.");
+  }
+
+  const selectedBed = await Bed.findById(bedId).populate("tenantId", "name phone");
+  if (!selectedBed) {
+    res.status(404);
+    throw new Error("Selected bed not found");
+  }
+
+  if (String(selectedBed.propertyId) !== String(propertyId)) {
+    res.status(400);
+    throw new Error("Selected bed does not belong to this property.");
+  }
+
+  if (selectedBed.status !== "vacant" || selectedBed.tenantId) {
+    res.status(400);
+    throw new Error(selectedBed.tenantId ? getOccupiedBedMessage(selectedBed) : `Bed ${selectedBed.bedNumber} is ${selectedBed.status}. Please select a vacant bed.`);
+  }
+
+  let tenantUserId = userId || null;
+  let accountCredentials = null;
+
+  if (!tenantUserId) {
+    const tenantLoginId = (loginId && loginId.trim().toUpperCase()) || await generateTenantLoginId();
+    const tenantPassword = password || `Tenant@${tenantLoginId.replace(/\D/g, "") || "1234"}`;
+
+    const existingLogin = await User.findOne({ loginId: tenantLoginId });
+    if (existingLogin) {
+      res.status(409);
+      throw new Error("Tenant login ID already exists");
+    }
+
+    const tenantUser = await User.create({
+      name,
+      phone,
+      email: email || undefined,
+      loginId: tenantLoginId,
+      password: tenantPassword,
+      role: "tenant",
+      status: "active",
+    });
+
+    tenantUserId = tenantUser._id;
+    accountCredentials = {
+      loginId: tenantLoginId,
+      password: tenantPassword,
+    };
+  }
+
   const tenant = await Tenant.create({
-    userId: userId || null,
-    propertyId, roomId: roomId || null, bedId: bedId || null,
+    userId: tenantUserId,
+    propertyId, roomId: selectedBed.roomId, bedId: selectedBed._id,
     name, phone, email: email || null,
     guardianPhone, emergencyContact, permanentAddress,
     rentAmount, securityDeposit: securityDeposit || 0,
@@ -58,7 +133,14 @@ const createTenant = asyncHandler(async (req, res) => {
     kycDocumentUrl: kycDocumentUrl || null,
   });
 
-  res.status(201).json(successResponse("Tenant created successfully", tenant));
+  selectedBed.status = "occupied";
+  selectedBed.tenantId = tenant._id;
+  await selectedBed.save();
+
+  res.status(201).json(successResponse("Tenant created successfully", {
+    tenant,
+    accountCredentials,
+  }));
 });
 
 /**
@@ -144,6 +226,17 @@ const updateTenant = asyncHandler(async (req, res) => {
     }
   });
 
+  if (req.body.status === "left" && tenant.bedId) {
+    const bed = await Bed.findById(tenant.bedId);
+    if (bed) {
+      bed.status = "vacant";
+      bed.tenantId = null;
+      await bed.save();
+    }
+    tenant.bedId = null;
+    tenant.roomId = null;
+  }
+
   await tenant.save();
   res.status(200).json(successResponse("Tenant updated successfully", tenant));
 });
@@ -156,27 +249,36 @@ const updateTenant = asyncHandler(async (req, res) => {
 const assignBed = asyncHandler(async (req, res) => {
   const { bedId } = req.body;
 
+  // Passing null/empty bedId removes current room/bed assignment.
   if (!bedId) {
-    res.status(400);
-    throw new Error("bedId is required");
+    const tenant = await Tenant.findById(req.params.id);
+    if (!tenant) {
+      res.status(404);
+      throw new Error("Tenant not found");
+    }
+
+    if (tenant.bedId) {
+      const oldBed = await Bed.findById(tenant.bedId);
+      if (oldBed) {
+        oldBed.status = "vacant";
+        oldBed.tenantId = null;
+        await oldBed.save();
+      }
+    }
+
+    tenant.bedId = null;
+    tenant.roomId = null;
+    await tenant.save();
+
+    res.status(200).json(successResponse("Room and bed assignment removed", tenant));
+    return;
   }
 
   // Find bed
-  const bed = await Bed.findById(bedId);
+  const bed = await Bed.findById(bedId).populate("tenantId", "name phone");
   if (!bed) {
     res.status(404);
     throw new Error("Bed not found");
-  }
-
-  // Check bed availability
-  if (bed.status === "occupied") {
-    res.status(400);
-    throw new Error("Bed is already occupied. Cannot assign another tenant.");
-  }
-
-  if (bed.status === "maintenance") {
-    res.status(400);
-    throw new Error("Bed is under maintenance. Cannot assign a tenant.");
   }
 
   // Find tenant
@@ -184,6 +286,17 @@ const assignBed = asyncHandler(async (req, res) => {
   if (!tenant) {
     res.status(404);
     throw new Error("Tenant not found");
+  }
+
+  if (String(bed.propertyId) !== String(tenant.propertyId)) {
+    res.status(400);
+    throw new Error("Selected bed does not belong to this tenant's property.");
+  }
+
+  // Check bed availability
+  if (bed.status !== "vacant" || bed.tenantId) {
+    res.status(400);
+    throw new Error(bed.tenantId ? getOccupiedBedMessage(bed) : `Bed ${bed.bedNumber} is ${bed.status}. Please select a vacant bed.`);
   }
 
   // If tenant already has a bed, free the old bed first
@@ -254,7 +367,7 @@ const markTenantLeft = asyncHandler(async (req, res) => {
 /**
  * @desc    Delete a tenant record
  * @route   DELETE /api/tenants/:id
- * @access  Protected (owner)
+ * @access  Protected (owner, manager)
  */
 const deleteTenant = asyncHandler(async (req, res) => {
   const tenant = await Tenant.findById(req.params.id);
@@ -264,11 +377,65 @@ const deleteTenant = asyncHandler(async (req, res) => {
     throw new Error("Tenant not found");
   }
 
+  if (tenant.bedId) {
+    const bed = await Bed.findById(tenant.bedId);
+    if (bed) {
+      bed.status = "vacant";
+      bed.tenantId = null;
+      await bed.save();
+    }
+  }
+
   await tenant.deleteOne();
   res.status(200).json(successResponse("Tenant deleted successfully", null));
+});
+
+/**
+ * @desc    Get logged-in tenant's room details
+ * @route   GET /api/tenants/me/room
+ * @access  Protected (tenant)
+ */
+const getMyRoom = asyncHandler(async (req, res) => {
+  if (req.user.role !== "tenant") {
+    res.status(403);
+    throw new Error("Only tenants can access their room");
+  }
+
+  const tenant = await Tenant.findOne({ userId: req.user._id })
+    .select("name phone email propertyId roomId bedId rentAmount joiningDate status")
+    .lean();
+
+  if (!tenant) {
+    res.status(404);
+    throw new Error("Tenant profile not found");
+  }
+
+  const [room, property, bed] = await Promise.all([
+    tenant.roomId ? Room.findById(tenant.roomId).select("roomNumber floor roomType rentPerBed facilities status").lean() : null,
+    tenant.propertyId ? Property.findById(tenant.propertyId).select("name city address").lean() : null,
+    tenant.bedId ? Bed.findById(tenant.bedId).select("bedNumber status").lean() : null,
+  ]);
+
+  res.status(200).json(
+    successResponse("Room details fetched", {
+      tenant: {
+        id: tenant._id,
+        name: tenant.name,
+        phone: tenant.phone,
+        email: tenant.email,
+        joiningDate: tenant.joiningDate,
+        status: tenant.status,
+      },
+      property: property || null,
+      room: room || null,
+      bed: bed || null,
+      rentAmount: tenant.rentAmount,
+    })
+  );
 });
 
 module.exports = {
   createTenant, getTenants, getTenantById,
   updateTenant, assignBed, markTenantLeft, deleteTenant,
+  getMyRoom,
 };

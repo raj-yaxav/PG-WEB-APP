@@ -74,10 +74,12 @@ export function ComplaintsSection({
           ))
         )}
 
-        <Pressable onPress={onRaiseComplaint} style={styles.raiseButton}>
-          <MaterialCommunityIcons name="plus" size={16} color={Colors.textSecondary} />
-          <Text style={styles.raiseText}>Raise New Complaint</Text>
-        </Pressable>
+        {onRaiseComplaint ? (
+          <Pressable onPress={onRaiseComplaint} style={({ pressed }) => [styles.raiseButton, pressed && styles.raiseButtonPressed]}>
+            <MaterialCommunityIcons name="plus" size={16} color={Colors.textSecondary} />
+            <Text style={styles.raiseText}>Raise New Complaint</Text>
+          </Pressable>
+        ) : null}
       </View>
     </View>
   );
@@ -116,11 +118,16 @@ const styles = StyleSheet.create({
     fontWeight: FontWeight.bold,
   },
   card: {
-    backgroundColor: Colors.surface,
-    borderRadius: BorderRadius.xl,
+    backgroundColor: '#E2F0FF',
+    borderRadius: BorderRadius['2xl'],
     padding: Spacing.lg,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: 'rgba(255,255,255,0.78)',
+    shadowColor: Colors.shadowDeep,
+    shadowOpacity: 0.65,
+    shadowRadius: 14,
+    shadowOffset: { width: 7, height: 9 },
+    elevation: 4,
   },
   complaintItem: {
     flexDirection: 'row',
@@ -176,8 +183,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderWidth: 1.5,
     borderStyle: 'dashed',
-    borderColor: Colors.border,
-    borderRadius: BorderRadius.lg,
+    borderColor: Colors.borderInput,
+    borderRadius: BorderRadius.xl,
     paddingVertical: Spacing.md,
     marginTop: Spacing.sm,
     gap: Spacing.sm,
@@ -186,5 +193,9 @@ const styles = StyleSheet.create({
     fontSize: FontSize.sm,
     color: Colors.textSecondary,
     fontWeight: FontWeight.semibold,
+  },
+  raiseButtonPressed: {
+    opacity: 0.78,
+    transform: [{ scale: 0.99 }],
   },
 });

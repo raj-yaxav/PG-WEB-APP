@@ -18,11 +18,11 @@ const { allowRoles } = require("../middleware/role.middleware");
 router
   .route("/")
   .post(protect, allowRoles("owner", "manager"), createPayment)
-  .get(protect, allowRoles("owner", "manager"), getPayments);
+  .get(protect, allowRoles("owner", "manager", "tenant"), getPayments);
 
 router
   .route("/:id")
-  .get(protect, allowRoles("owner", "manager"), getPaymentById)
+  .get(protect, allowRoles("owner", "manager", "tenant"), getPaymentById)
   .delete(protect, allowRoles("owner"), deletePayment);
 
 module.exports = router;

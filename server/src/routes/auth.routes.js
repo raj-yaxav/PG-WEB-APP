@@ -8,14 +8,32 @@
 
 const express = require("express");
 const router = express.Router();
-const { register, login, getMe } = require("../controllers/auth.controller");
+const {
+  register,
+  login,
+  getMe,
+  updateMe,
+  changePassword,
+  verifyPassword,
+  createManager,
+  getManagers,
+  deleteManager,
+} = require("../controllers/auth.controller");
 const { protect } = require("../middleware/auth.middleware");
+const { allowRoles } = require("../middleware/role.middleware");
 
 // Public routes
 router.post("/register", register);
 router.post("/login", login);
 
 // Protected routes
-router.get("/me", protect, getMe);
+router.route("/me").get(protect, getMe).patch(protect, updateMe);
+router.patch("/change-password", protect, changePassword);
+router.post("/verify-password", protect, verifyPassword);
+router
+  .route("/managers")
+  .get(protect, allowRoles("owner"), getManagers)
+  .post(protect, allowRoles("owner"), createManager);
+router.delete("/managers/:id", protect, allowRoles("owner"), deleteManager);
 
 module.exports = router;

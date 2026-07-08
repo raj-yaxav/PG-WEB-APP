@@ -59,6 +59,18 @@ const roomSchema = new mongoose.Schema(
   }
 );
 
+// ─── Virtuals ─────────────────────────────────────────────────────────────────
+roomSchema.virtual("beds", {
+  ref: "Bed",
+  localField: "_id",
+  foreignField: "roomId",
+  options: { select: "_id bedNumber status tenantId propertyId roomId" },
+});
+
+// Ensure virtuals are included in toJSON / toObject output
+roomSchema.set("toJSON", { virtuals: true });
+roomSchema.set("toObject", { virtuals: true });
+
 // ─── Indexes ──────────────────────────────────────────────────────────────────
 roomSchema.index({ propertyId: 1 });
 roomSchema.index({ roomNumber: 1 });

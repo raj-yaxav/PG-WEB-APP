@@ -2,6 +2,10 @@ import React, { useEffect, useRef, useState } from 'react';
 import {
   Animated,
   Alert,
+  KeyboardAvoidingView,
+  PanResponder,
+  Platform,
+  Pressable,
   SafeAreaView,
   ScrollView,
   StyleSheet,
@@ -21,6 +25,12 @@ interface LoginScreenProps {
   onLoginSuccess: () => void;
 }
 
+const LOGIN_ROLES: Array<{ value: User['role']; label: string }> = [
+  { value: 'owner', label: 'Owner' },
+  { value: 'manager', label: 'Manager' },
+  { value: 'tenant', label: 'Tenant' },
+];
+
 export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
@@ -29,26 +39,80 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const pulse = useRef(new Animated.Value(0)).current;
+  const entrance = useRef(new Animated.Value(0)).current;
+  const roleSlide = useRef(new Animated.Value(0)).current;
+
+  function switchRole(nextRole: User['role']) {
+    if (nextRole === role) return;
+    setRole(nextRole);
+    setIdentifier('');
+    setError('');
+  }
+
+  function moveRole(direction: 1 | -1) {
+    const currentIndex = LOGIN_ROLES.findIndex((item) => item.value === role);
+    const nextIndex = Math.max(0, Math.min(LOGIN_ROLES.length - 1, currentIndex + direction));
+    switchRole(LOGIN_ROLES[nextIndex].value);
+  }
+
+  const roleSwipeResponder = PanResponder.create({
+    onMoveShouldSetPanResponder: (_, gesture) =>
+      Math.abs(gesture.dx) > 18 && Math.abs(gesture.dx) > Math.abs(gesture.dy) * 1.25,
+    onPanResponderGrant: () => {
+      roleSlide.stopAnimation();
+    },
+    onPanResponderMove: (_, gesture) => {
+      const clampedX = Math.max(-42, Math.min(42, gesture.dx));
+      roleSlide.setValue(clampedX);
+    },
+    onPanResponderRelease: (_, gesture) => {
+      if (gesture.dx <= -58 || gesture.vx <= -0.65) {
+        moveRole(1);
+      } else if (gesture.dx >= 58 || gesture.vx >= 0.65) {
+        moveRole(-1);
+      }
+      Animated.spring(roleSlide, {
+        toValue: 0,
+        friction: 7,
+        tension: 80,
+        useNativeDriver: true,
+      }).start();
+    },
+    onPanResponderTerminate: () => {
+      Animated.spring(roleSlide, {
+        toValue: 0,
+        friction: 7,
+        tension: 80,
+        useNativeDriver: true,
+      }).start();
+    },
+  });
 
   useEffect(() => {
     const animation = Animated.loop(
       Animated.sequence([
         Animated.timing(pulse, {
           toValue: 1,
-          duration: 2600,
+          duration: 2800,
           useNativeDriver: true,
         }),
         Animated.timing(pulse, {
           toValue: 0,
-          duration: 2600,
+          duration: 2800,
           useNativeDriver: true,
         }),
       ]),
     );
 
+    Animated.timing(entrance, {
+      toValue: 1,
+      duration: 620,
+      useNativeDriver: true,
+    }).start();
+
     animation.start();
     return () => animation.stop();
-  }, [pulse]);
+  }, [entrance, pulse]);
 
   async function handleLogin() {
     if (!identifier.trim() || !password.trim()) {
@@ -79,7 +143,19 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
   });
   const shapeOpacity = pulse.interpolate({
     inputRange: [0, 1],
-    outputRange: [0.28, 0.48],
+    outputRange: [0.36, 0.58],
+  });
+  const floatY = pulse.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, -14],
+  });
+  const floatRotate = pulse.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['-18deg', '-10deg'],
+  });
+  const cardTranslateY = entrance.interpolate({
+    inputRange: [0, 1],
+    outputRange: [28, 0],
   });
 
   return (
@@ -87,102 +163,111 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
       <Animated.View
         pointerEvents="none"
         style={[
-          styles.floatingShape,
-          styles.shapeTopLeft,
-          { opacity: shapeOpacity, transform: [{ scale: shapeScale }] },
+          styles.softPanel,
+          styles.panelTopLeft,
+          { opacity: shapeOpacity, transform: [{ translateY: floatY }, { rotate: floatRotate }, { scale: shapeScale }] },
         ]}
       />
       <Animated.View
         pointerEvents="none"
         style={[
-          styles.floatingShape,
-          styles.shapeBottomRight,
-          { opacity: shapeOpacity, transform: [{ scale: shapeScale }] },
+          styles.softPanel,
+          styles.panelBottomRight,
+          { opacity: shapeOpacity, transform: [{ rotate: '16deg' }, { scale: shapeScale }] },
         ]}
       />
+      <View pointerEvents="none" style={[styles.glowWash, styles.glowTop]} />
+      <View pointerEvents="none" style={[styles.glowWash, styles.glowBottom]} />
       <View pointerEvents="none" style={[styles.edgeCurve, styles.edgeTopRight]} />
       <View pointerEvents="none" style={[styles.edgeCurve, styles.edgeBottomLeft]} />
 
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        style={styles.keyboardAvoid}
       >
-        <View style={styles.card}>
-          <ShieldLogo size={76} />
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          <Animated.View
+            style={[
+              styles.cardShadow,
+              {
+                opacity: entrance,
+                transform: [{ translateY: cardTranslateY }],
+              },
+            ]}
+          >
+            <View style={styles.card}>
+              <Animated.View style={[styles.logoLift, { transform: [{ translateY: floatY }] }]}>
+                <ShieldLogo size={86} />
+              </Animated.View>
 
-          <Text style={styles.title}>PG Manager Login</Text>
-          <Text style={styles.subtitle}>
-            Owner uses email. Manager and tenant use assigned ID.
-          </Text>
+              <Text style={styles.kicker}>PG Room Management</Text>
+              <Text style={styles.title}>Welcome back</Text>
+              <Text style={styles.subtitle}>Sign in to continue your workspace.</Text>
 
-          <RolePicker
-            selectedRole={role}
-            onSelectRole={(nextRole) => {
-              setRole(nextRole);
-              setIdentifier('');
-              setError('');
-            }}
-          />
+              <Animated.View
+                {...roleSwipeResponder.panHandlers}
+                style={[styles.swipeArea, { transform: [{ translateX: roleSlide }] }]}
+              >
+                <RolePicker selectedRole={role} onSelectRole={switchRole} />
 
-          <View style={styles.form}>
-            <PGInput
-              label={role === 'owner' ? 'Owner email' : role === 'manager' ? 'Manager ID' : 'Tenant ID'}
-              placeholder={role === 'owner' ? 'owner@example.com' : role === 'manager' ? 'MGR-1001' : 'TEN-1001'}
-              value={identifier}
-              onChangeText={(text) => {
-                setIdentifier(text);
-                setError('');
-              }}
-              keyboardType={role === 'owner' ? 'email-address' : 'default'}
-              autoCapitalize="none"
-              error={error}
-            />
+                <View style={styles.form}>
+                  <PGInput
+                    label={role === 'owner' ? 'Owner email' : role === 'manager' ? 'Manager ID' : 'Tenant ID'}
+                    placeholder={role === 'owner' ? 'pgowner@gmail.com' : role === 'manager' ? 'MGR-1001' : 'TEN-1001'}
+                    value={identifier}
+                    onChangeText={(text) => {
+                      setIdentifier(text);
+                      setError('');
+                    }}
+                    keyboardType={role === 'owner' ? 'email-address' : 'default'}
+                    autoCapitalize="none"
+                    error={error}
+                  />
 
-            <PGInput
-              label="Password"
-              placeholder="Enter your password"
-              value={password}
-              onChangeText={(text) => {
-                setPassword(text);
-                setError('');
-              }}
-              secureTextEntry
-              showToggle
-            />
-          </View>
+                  <PGInput
+                    label="Password"
+                    placeholder="Enter your password"
+                    value={password}
+                    onChangeText={(text) => {
+                      setPassword(text);
+                      setError('');
+                    }}
+                    secureTextEntry
+                    showToggle
+                  />
+                </View>
+              </Animated.View>
 
-          <View style={styles.optionsRow}>
-            <PGCheckbox
-              label="Remember me"
-              checked={rememberMe}
-              onToggle={() => setRememberMe(!rememberMe)}
-            />
-            <Text
-              style={styles.forgotLink}
-              onPress={() => {
-                Alert.alert('Forgot Password', 'Contact your PG owner/admin to reset password.');
-              }}
-            >
-              Forgot Password?
-            </Text>
-          </View>
+              <View style={styles.optionsRow}>
+                <PGCheckbox
+                  label="Remember me"
+                  checked={rememberMe}
+                  onToggle={() => setRememberMe(!rememberMe)}
+                />
+                <Text
+                  style={styles.forgotLink}
+                  onPress={() => {
+                    Alert.alert('Forgot Password', 'Contact your PG owner/admin to reset password.');
+                  }}
+                >
+                  Forgot Password?
+                </Text>
+              </View>
 
-          <PGButton
-            label="Sign In"
-            onPress={handleLogin}
-            loading={loading}
-            style={styles.signInButton}
-          />
-
-          <View style={styles.noteCard}>
-            <Text style={styles.noteTitle}>Account access rule</Text>
-            <Text style={styles.noteText}>
-              Owner creates manager IDs. Manager allots rooms and shares tenant IDs after booking.
-            </Text>
-          </View>
-        </View>
-      </ScrollView>
+              <PGButton
+                label="Sign In"
+                onPress={handleLogin}
+                loading={loading}
+                style={styles.signInButton}
+              />
+            </View>
+          </Animated.View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -194,26 +279,28 @@ function RolePicker({
   selectedRole: User['role'];
   onSelectRole: (role: User['role']) => void;
 }) {
-  const roles: Array<{ value: User['role']; label: string }> = [
-    { value: 'owner', label: 'Owner' },
-    { value: 'manager', label: 'Manager' },
-    { value: 'tenant', label: 'Tenant' },
-  ];
-
   return (
     <View style={styles.roleGroup}>
       <Text style={styles.roleLabel}>Account type</Text>
       <View style={styles.roleTabs}>
-        {roles.map((item) => {
+        {LOGIN_ROLES.map((item) => {
           const active = selectedRole === item.value;
           return (
-            <Text
+            <Pressable
               key={item.value}
               onPress={() => onSelectRole(item.value)}
-              style={[styles.roleTab, active && styles.roleTabActive]}
+              style={({ pressed }) => [
+                styles.roleTab,
+                active && styles.roleTabActive,
+                pressed && styles.roleTabPressed,
+              ]}
+              accessibilityRole="button"
+              accessibilityState={{ selected: active }}
             >
-              {item.label}
-            </Text>
+              <Text style={[styles.roleTabText, active && styles.roleTabTextActive]}>
+                {item.label}
+              </Text>
+            </Pressable>
           );
         })}
       </View>
@@ -224,31 +311,54 @@ function RolePicker({
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: '#EAF3FF',
   },
-  floatingShape: {
+  keyboardAvoid: {
+    flex: 1,
+  },
+  softPanel: {
+    position: 'absolute',
+    width: 280,
+    height: 182,
+    borderRadius: BorderRadius['3xl'],
+    backgroundColor: '#CFE1FF',
+    shadowColor: Colors.shadowLight,
+    shadowOpacity: 1,
+    shadowRadius: 20,
+    shadowOffset: { width: -8, height: -8 },
+  },
+  panelTopLeft: {
+    top: -82,
+    left: -112,
+  },
+  panelBottomRight: {
+    right: -128,
+    bottom: -80,
+    backgroundColor: '#D7F0FF',
+  },
+  glowWash: {
     position: 'absolute',
     width: 210,
     height: 210,
-    borderRadius: 64,
-    backgroundColor: Colors.primaryLight,
+    borderRadius: BorderRadius.full,
+    backgroundColor: 'rgba(37,99,235,0.10)',
   },
-  shapeTopLeft: {
-    top: -92,
-    left: -82,
+  glowTop: {
+    top: 58,
+    right: -86,
   },
-  shapeBottomRight: {
-    right: -96,
-    bottom: -88,
-    backgroundColor: Colors.infoBg,
+  glowBottom: {
+    left: -92,
+    bottom: 88,
+    backgroundColor: 'rgba(14,165,233,0.10)',
   },
   edgeCurve: {
     position: 'absolute',
     width: 150,
     height: 150,
-    borderRadius: 48,
+    borderRadius: BorderRadius['3xl'],
     borderWidth: 2,
-    borderColor: Colors.primaryBg,
+    borderColor: 'rgba(37,99,235,0.14)',
   },
   edgeTopRight: {
     top: 42,
@@ -263,29 +373,64 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     paddingHorizontal: Spacing.xl,
-    paddingVertical: Spacing['3xl'],
+    paddingTop: Spacing['5xl'],
+    paddingBottom: Platform.OS === 'android' ? Spacing['5xl'] : Spacing['3xl'],
     justifyContent: 'center',
+  },
+  cardShadow: {
+    width: '100%',
+    borderRadius: BorderRadius['3xl'],
+    backgroundColor: '#EAF3FF',
+    shadowColor: 'rgba(30,64,175,0.22)',
+    shadowOpacity: 1,
+    shadowRadius: 30,
+    shadowOffset: { width: 14, height: 18 },
+    elevation: 10,
   },
   card: {
     width: '100%',
     alignItems: 'center',
-    borderRadius: BorderRadius['2xl'],
-    backgroundColor: Colors.surface,
-    padding: Spacing.xl,
+    borderRadius: BorderRadius['3xl'],
+    backgroundColor: '#F8FBFF',
+    paddingHorizontal: Spacing.xl,
+    paddingTop: Spacing['3xl'],
+    paddingBottom: Spacing.xl,
     borderWidth: 1,
-    borderColor: Colors.border,
-    shadowColor: Colors.shadow,
+    borderColor: 'rgba(255,255,255,0.86)',
+    shadowColor: 'rgba(255,255,255,0.96)',
     shadowOpacity: 1,
-    shadowRadius: 24,
+    shadowRadius: 16,
+    shadowOffset: { width: -8, height: -8 },
+  },
+  logoLift: {
+    width: 104,
+    height: 104,
+    borderRadius: 52,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: -6,
+    marginBottom: Spacing.md,
+    backgroundColor: '#E6F0FF',
+    shadowColor: 'rgba(37,99,235,0.24)',
+    shadowOpacity: 1,
+    shadowRadius: 18,
     shadowOffset: { width: 0, height: 14 },
-    elevation: 6,
+    elevation: 8,
+  },
+  kicker: {
+    fontSize: FontSize.xs,
+    fontWeight: FontWeight.bold,
+    color: Colors.primaryDark,
+    letterSpacing: 0,
+    textAlign: 'center',
+    textTransform: 'uppercase',
+    marginBottom: Spacing.xs,
   },
   title: {
-    fontSize: FontSize['2xl'],
-    fontWeight: FontWeight.bold,
+    fontSize: FontSize['4xl'],
+    fontWeight: FontWeight.extrabold,
     color: Colors.textPrimary,
     textAlign: 'center',
-    marginTop: Spacing.lg,
     marginBottom: Spacing.xs,
   },
   subtitle: {
@@ -299,6 +444,9 @@ const styles = StyleSheet.create({
     width: '100%',
     marginBottom: Spacing.sm,
   },
+  swipeArea: {
+    width: '100%',
+  },
   roleGroup: {
     width: '100%',
     marginBottom: Spacing.lg,
@@ -311,23 +459,36 @@ const styles = StyleSheet.create({
   },
   roleTabs: {
     flexDirection: 'row',
-    backgroundColor: Colors.surfaceVariant,
-    borderRadius: BorderRadius.lg,
-    padding: 4,
+    backgroundColor: '#E3EEFF',
+    borderRadius: BorderRadius['2xl'],
+    padding: 5,
+    borderWidth: 1,
+    borderColor: '#D4E3F8',
   },
   roleTab: {
     flex: 1,
-    minHeight: 42,
-    borderRadius: BorderRadius.md,
-    textAlign: 'center',
-    textAlignVertical: 'center',
+    minHeight: 44,
+    borderRadius: BorderRadius.xl,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  roleTabActive: {
+    backgroundColor: '#FFFFFF',
+    shadowColor: 'rgba(30,64,175,0.20)',
+    shadowOpacity: 0.95,
+    shadowRadius: 10,
+    shadowOffset: { width: 4, height: 6 },
+    elevation: 3,
+  },
+  roleTabPressed: {
+    transform: [{ scale: 0.98 }],
+  },
+  roleTabText: {
     color: Colors.textSecondary,
     fontSize: FontSize.sm,
     fontWeight: FontWeight.semibold,
-    paddingTop: 11,
   },
-  roleTabActive: {
-    backgroundColor: Colors.surface,
+  roleTabTextActive: {
     color: Colors.primary,
   },
   optionsRow: {
@@ -338,29 +499,13 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.lg,
   },
   forgotLink: {
+    minHeight: 44,
+    textAlignVertical: 'center',
     fontSize: FontSize.sm,
     color: Colors.primary,
-    fontWeight: FontWeight.medium,
+    fontWeight: FontWeight.semibold,
   },
   signInButton: {
     width: '100%',
-  },
-  noteCard: {
-    width: '100%',
-    marginTop: Spacing.lg,
-    borderRadius: BorderRadius.lg,
-    backgroundColor: Colors.primaryBg,
-    padding: Spacing.md,
-  },
-  noteTitle: {
-    fontSize: FontSize.sm,
-    fontWeight: FontWeight.bold,
-    color: Colors.primaryDark,
-    marginBottom: 4,
-  },
-  noteText: {
-    fontSize: FontSize.xs,
-    color: Colors.textSecondary,
-    lineHeight: 18,
   },
 });

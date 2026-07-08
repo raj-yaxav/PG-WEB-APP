@@ -16,10 +16,11 @@ export const Spacing = {
 
 export const BorderRadius = {
   sm: 6,
-  md: 8,
-  lg: 12,
-  xl: 16,
-  '2xl': 20,
+  md: 10,
+  lg: 14,
+  xl: 18,
+  '2xl': 24,
+  '3xl': 30,
   full: 9999,
 } as const;
 

@@ -1,14 +1,10 @@
 /**
- * PG Manager — Checkbox Component
- * 
- * Props:
- * - label: string — checkbox label
- * - checked: boolean — checked state
- * - onToggle: () => void — toggle handler
+ * PG Manager - Checkbox Component
  */
 
 import React from 'react';
 import { Pressable, Text, View, StyleSheet } from 'react-native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Colors } from '../constants/colors';
 import { Spacing, BorderRadius, FontSize, FontWeight } from '../constants/spacing';
 
@@ -20,9 +16,9 @@ interface PGCheckboxProps {
 
 export function PGCheckbox({ label, checked, onToggle }: PGCheckboxProps) {
   return (
-    <Pressable onPress={onToggle} style={styles.container}>
+    <Pressable onPress={onToggle} style={styles.container} hitSlop={8}>
       <View style={[styles.box, checked && styles.boxChecked]}>
-        {checked && <Text style={styles.checkmark}>✓</Text>}
+        {checked && <MaterialCommunityIcons name="check" size={14} color={Colors.textInverse} />}
       </View>
       <Text style={styles.label}>{label}</Text>
     </Pressable>
@@ -33,14 +29,15 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
+    minHeight: 44,
   },
   box: {
-    width: 20,
-    height: 20,
+    width: 22,
+    height: 22,
     borderRadius: BorderRadius.sm,
     borderWidth: 1.5,
     borderColor: Colors.borderInput,
-    backgroundColor: Colors.surface,
+    backgroundColor: Colors.claySurface,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: Spacing.sm,
@@ -48,11 +45,6 @@ const styles = StyleSheet.create({
   boxChecked: {
     backgroundColor: Colors.primary,
     borderColor: Colors.primary,
-  },
-  checkmark: {
-    color: Colors.textInverse,
-    fontSize: 12,
-    fontWeight: FontWeight.bold,
   },
   label: {
     fontSize: FontSize.sm,

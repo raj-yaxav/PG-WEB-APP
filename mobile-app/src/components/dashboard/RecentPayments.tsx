@@ -28,7 +28,7 @@ export function RecentPayments({ payments, onViewAll }: RecentPaymentsProps) {
     <View style={styles.container}>
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>Recent Payments</Text>
-        <Pressable onPress={onViewAll}>
+        <Pressable onPress={onViewAll} hitSlop={8}>
           <Text style={styles.viewAll}>View All</Text>
         </Pressable>
       </View>
@@ -87,17 +87,22 @@ const styles = StyleSheet.create({
   paymentItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.surface,
-    borderRadius: BorderRadius.xl,
+    backgroundColor: '#E2F0FF',
+    borderRadius: BorderRadius['2xl'],
     padding: Spacing.md,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: 'rgba(255,255,255,0.78)',
+    shadowColor: Colors.shadowDeep,
+    shadowOpacity: 0.55,
+    shadowRadius: 12,
+    shadowOffset: { width: 6, height: 8 },
+    elevation: 3,
   },
   iconContainer: {
     width: 44,
     height: 44,
-    borderRadius: 12,
-    backgroundColor: Colors.surfaceVariant,
+    borderRadius: 16,
+    backgroundColor: Colors.clayInset,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: Spacing.md,

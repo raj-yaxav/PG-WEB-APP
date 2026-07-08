@@ -89,7 +89,7 @@ export function PGInput({
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: Spacing.md,
+    marginBottom: Spacing.lg,
   },
   label: {
     fontSize: FontSize.sm,
@@ -100,16 +100,22 @@ const styles = StyleSheet.create({
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    minHeight: 52,
+    minHeight: 56,
     borderWidth: 1,
     borderColor: Colors.borderInput,
-    borderRadius: BorderRadius.md,
-    backgroundColor: Colors.surface,
+    borderRadius: BorderRadius.xl,
+    backgroundColor: Colors.clayInset,
     paddingHorizontal: Spacing.lg,
+    shadowColor: Colors.shadowLight,
+    shadowOpacity: 1,
+    shadowRadius: 8,
+    shadowOffset: { width: -4, height: -4 },
+    elevation: 1,
   },
   inputWrapperFocused: {
     borderColor: Colors.borderInputFocus,
     borderWidth: 1.5,
+    backgroundColor: Colors.claySurface,
   },
   inputWrapperError: {
     borderColor: Colors.error,
@@ -122,6 +128,8 @@ const styles = StyleSheet.create({
   },
   toggle: {
     paddingLeft: Spacing.sm,
+    minHeight: 44,
+    justifyContent: 'center',
   },
   toggleText: {
     fontSize: FontSize.sm,

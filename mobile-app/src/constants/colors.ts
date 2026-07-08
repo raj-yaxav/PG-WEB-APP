@@ -4,43 +4,48 @@
 
 export const Colors = {
   // Primary
-  primary: '#6366F1',
-  primaryDark: '#4F46E5',
-  primaryLight: '#818CF8',
-  primaryBg: '#EEF2FF',
-  primaryGradientStart: '#6366F1',
-  primaryGradientEnd: '#8B5CF6',
+  primary: '#2563EB',
+  primaryDark: '#1D4ED8',
+  primaryLight: '#93C5FD',
+  primaryBg: '#DBEAFE',
+  primaryGradientStart: '#3B82F6',
+  primaryGradientEnd: '#1D4ED8',
 
   // Backgrounds
-  background: '#F3F4F6',
+  background: '#F0F7FF',
   surface: '#FFFFFF',
-  surfaceVariant: '#F9FAFB',
+  surfaceVariant: '#EAF2FF',
+  clayBase: '#F0F7FF',
+  claySurface: '#F8FBFF',
+  clayInset: '#E4EEFC',
 
   // Text
-  textPrimary: '#111827',
-  textSecondary: '#6B7280',
-  textTertiary: '#9CA3AF',
+  textPrimary: '#0F1F3D',
+  textSecondary: '#405575',
+  textTertiary: '#70819C',
   textInverse: '#FFFFFF',
 
   // Borders
-  border: '#E5E7EB',
-  borderLight: '#F3F4F6',
-  borderInput: '#D1D5DB',
-  borderInputFocus: '#6366F1',
+  border: '#D7E4F7',
+  borderLight: '#EDF5FF',
+  borderInput: '#C5D6F0',
+  borderInputFocus: '#2563EB',
 
   // Status
-  success: '#22C55E',
-  successBg: '#DCFCE7',
-  error: '#EF4444',
+  success: '#0284C7',
+  successBg: '#E0F2FE',
+  error: '#DC2626',
   errorBg: '#FEE2E2',
-  warning: '#F59E0B',
+  warning: '#D97706',
   warningBg: '#FEF3C7',
-  info: '#3B82F6',
-  infoBg: '#DBEAFE',
+  info: '#2563EB',
+  infoBg: '#E0F2FE',
 
   // Overlay
   overlay: 'rgba(0, 0, 0, 0.4)',
-  shadow: 'rgba(0, 0, 0, 0.08)',
+  shadow: 'rgba(37, 99, 235, 0.14)',
+  shadowDeep: 'rgba(30, 64, 175, 0.18)',
+  shadowLight: 'rgba(255, 255, 255, 0.92)',
 } as const;
 
 export type ColorType = typeof Colors;

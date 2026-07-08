@@ -57,6 +57,10 @@ const userSchema = new mongoose.Schema(
       },
       default: "active",
     },
+    profilePhotoUrl: {
+      type: String,
+      default: null,
+    },
   },
   {
     timestamps: true, // Adds createdAt and updatedAt automatically

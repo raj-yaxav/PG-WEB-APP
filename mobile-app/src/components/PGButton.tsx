@@ -77,11 +77,16 @@ export function PGButton({
 
 const styles = StyleSheet.create({
   base: {
-    minHeight: 52,
-    borderRadius: BorderRadius.lg,
+    minHeight: 56,
+    borderRadius: BorderRadius['2xl'],
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: Spacing.lg,
+    shadowColor: Colors.shadowDeep,
+    shadowOpacity: 1,
+    shadowRadius: 16,
+    shadowOffset: { width: 8, height: 10 },
+    elevation: 6,
   },
   content: {
     flexDirection: 'row',
@@ -97,12 +102,14 @@ const styles = StyleSheet.create({
   },
   primary: {
     backgroundColor: Colors.primary,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.45)',
   },
   primaryText: {
     color: Colors.textInverse,
   },
   outline: {
-    backgroundColor: Colors.surface,
+    backgroundColor: Colors.claySurface,
     borderWidth: 1,
     borderColor: Colors.border,
   },
@@ -110,7 +117,7 @@ const styles = StyleSheet.create({
     color: Colors.textPrimary,
   },
   social: {
-    backgroundColor: Colors.surface,
+    backgroundColor: Colors.claySurface,
     borderWidth: 1,
     borderColor: Colors.border,
     minHeight: 48,
@@ -122,6 +129,7 @@ const styles = StyleSheet.create({
   },
   pressed: {
     opacity: 0.85,
+    transform: [{ scale: 0.98 }],
   },
   disabled: {
     opacity: 0.5,

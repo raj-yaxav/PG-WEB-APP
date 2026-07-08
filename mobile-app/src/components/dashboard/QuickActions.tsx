@@ -26,6 +26,8 @@ const iconMap: Record<string, keyof typeof MaterialCommunityIcons.glyphMap> = {
   'chart-box': 'chart-box-outline',
   'alert-circle': 'alert-circle-outline',
   'account-multiple': 'account-multiple-outline',
+  'account-plus': 'account-plus-outline',
+  'account-circle': 'account-circle-outline',
 };
 
 export function QuickActions({ actions, onActionPress }: QuickActionsProps) {
@@ -35,7 +37,7 @@ export function QuickActions({ actions, onActionPress }: QuickActionsProps) {
         <Pressable
           key={action.id}
           onPress={() => onActionPress(action.id)}
-          style={styles.actionItem}
+          style={({ pressed }) => [styles.actionItem, pressed && styles.actionItemPressed]}
         >
           <View style={styles.iconContainer}>
             <MaterialCommunityIcons
@@ -61,16 +63,26 @@ const styles = StyleSheet.create({
   actionItem: {
     alignItems: 'center',
     gap: Spacing.sm,
+    minWidth: 68,
+  },
+  actionItemPressed: {
+    opacity: 0.82,
+    transform: [{ scale: 0.96 }],
   },
   iconContainer: {
     width: 56,
     height: 56,
-    borderRadius: BorderRadius.lg,
-    backgroundColor: Colors.surface,
+    borderRadius: BorderRadius['2xl'],
+    backgroundColor: '#E2F0FF',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: 'rgba(255,255,255,0.78)',
+    shadowColor: Colors.shadowDeep,
+    shadowOpacity: 0.7,
+    shadowRadius: 12,
+    shadowOffset: { width: 6, height: 8 },
+    elevation: 4,
   },
   label: {
     fontSize: FontSize.xs,
