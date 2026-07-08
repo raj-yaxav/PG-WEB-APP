@@ -2,6 +2,7 @@ import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 
 const DEFAULT_API_PORT = 5000;
+const FALLBACK_API_BASE_URL = 'https://pg-web-app-production.up.railway.app/api';
 const FALLBACK_LAN_HOST = '192.168.4.60';
 
 function getExpoExtra() {
@@ -37,12 +38,26 @@ function getApiHost() {
   return getExpoHost() || FALLBACK_LAN_HOST;
 }
 
+function getApiBaseUrl() {
+  const configuredBaseUrl = getExpoExtra().apiBaseUrl;
+  if (typeof configuredBaseUrl === 'string' && configuredBaseUrl.trim()) {
+    return configuredBaseUrl.trim().replace(/\/$/, '');
+  }
+
+  const host = getApiHost();
+  if (!host || host === FALLBACK_LAN_HOST) {
+    return FALLBACK_API_BASE_URL;
+  }
+
+  return `http://${host}:${getApiPort()}/api`;
+}
+
 function getApiPort() {
   const configuredPort = getExpoExtra().apiPort;
   return configuredPort ? Number(configuredPort) : DEFAULT_API_PORT;
 }
 
-export const API_BASE_URL = `http://${getApiHost()}:${getApiPort()}/api`;
+export const API_BASE_URL = getApiBaseUrl();
 
 export const STORAGE_KEYS = {
   token: 'pg_token',

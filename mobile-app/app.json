@@ -24,8 +24,7 @@
       "expo-font"
     ],
     "extra": {
-      "apiHost": "192.168.4.60",
-      "apiPort": 5000
+      "apiBaseUrl": "https://pg-web-app-production.up.railway.app/api"
     }
   }
 }
