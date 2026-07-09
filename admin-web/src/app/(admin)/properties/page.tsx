@@ -68,6 +68,16 @@ export default function PropertiesPage() {
     fetchProperties();
   }, []);
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    window.setTimeout(() => {
+      if (params.get("action") === "create") {
+        openCreateForm();
+      }
+    }, 0);
+  }, []);
+
   const filteredProperties = useMemo(() => {
     const term = search.trim().toLowerCase();
     return properties.filter((property) => {

@@ -23,10 +23,12 @@ interface SidebarProps {
 
 const menuItems = [
   { id: "dashboard", label: "Dashboard", icon: "dashboard", roles: ["owner", "manager", "tenant"] },
-  { id: "reports", label: "Reports", icon: "chart", roles: ["owner", "manager"] },
+  { id: "properties", label: "Properties", icon: "building", roles: ["owner"] },
   { id: "managers", label: "Managers", icon: "manager", roles: ["owner"] },
+  { id: "tenants", label: "Tenants", icon: "users", roles: ["owner", "manager"] },
   { id: "rooms", label: "Rooms", icon: "bed", roles: ["manager"] },
   { id: "complaints", label: "Tenant Queries", icon: "alert", roles: ["manager"] },
+  { id: "reports", label: "Reports", icon: "chart", roles: ["owner", "manager"] },
   { id: "complaints", label: "Support", icon: "alert", roles: ["tenant"] },
   { id: "profile", label: "Profile", icon: "profile", roles: ["owner", "manager", "tenant"] },
 ];
@@ -62,7 +64,7 @@ export function Sidebar({ role, activeItem, onItemClick, isOpen = false, onClose
   return (
     <aside
       className={cn(
-        "fixed inset-y-0 left-0 z-40 flex h-dvh w-[min(18rem,calc(100vw-2rem))] flex-col border-r border-blue-100 bg-white shadow-2xl shadow-blue-950/10 transition-transform duration-300 lg:z-10 lg:w-72 lg:translate-x-0 lg:shadow-none",
+        "fixed bottom-0 left-0 top-0 z-40 flex h-screen max-h-screen w-[min(18rem,calc(100vw-2rem))] flex-col overflow-hidden border-r border-blue-100 bg-white shadow-2xl shadow-blue-950/10 transition-transform duration-300 will-change-transform lg:z-30 lg:w-72 lg:translate-x-0 lg:shadow-none",
         isOpen ? "translate-x-0" : "-translate-x-full"
       )}
       aria-label="Main navigation"
@@ -91,7 +93,7 @@ export function Sidebar({ role, activeItem, onItemClick, isOpen = false, onClose
       </div>
 
       {/* Menu Items */}
-      <nav className="flex-1 space-y-1 overflow-y-auto px-3 pt-3 sm:px-4">
+      <nav className="min-h-0 flex-1 space-y-1 overflow-y-auto px-3 pt-3 sm:px-4">
         <p className="px-4 pb-1 text-[11px] font-bold uppercase tracking-widest text-slate-400">Menu</p>
         {visibleItems.map((item) => (
           <button
@@ -114,7 +116,7 @@ export function Sidebar({ role, activeItem, onItemClick, isOpen = false, onClose
       </nav>
 
       {/* Bottom plan/usage card */}
-      <div className="px-3 pb-4 sm:px-4">
+      <div className="shrink-0 px-3 pb-4 sm:px-4">
         <div className="relative overflow-hidden rounded-2xl bg-[#E2F0FF] p-4 text-slate-900 shadow-[8px_10px_24px_rgba(30,64,175,0.12)]">
           <div className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full bg-blue-500/10 blur-2xl" />
           <div className="relative flex items-center gap-2">
@@ -142,7 +144,7 @@ export function Sidebar({ role, activeItem, onItemClick, isOpen = false, onClose
       </div>
 
       {/* Account Actions */}
-      <div className="grid grid-cols-2 gap-2 border-t border-blue-100 p-3 sm:p-4">
+      <div className="grid shrink-0 grid-cols-2 gap-2 border-t border-blue-100 p-3 sm:p-4">
         <button
           type="button"
           onClick={() => router.push("/settings")}

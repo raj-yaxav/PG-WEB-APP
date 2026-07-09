@@ -56,6 +56,19 @@ export function AdminShell({ activeItem, children, render }: AdminShellProps) {
   }, [pathname]);
 
   useEffect(() => {
+    if (typeof document === "undefined") return;
+
+    const originalOverflow = document.body.style.overflow;
+    if (sidebarOpen) {
+      document.body.style.overflow = "hidden";
+    }
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, [sidebarOpen]);
+
+  useEffect(() => {
     if (typeof window === "undefined") return;
 
     const syncUser = () => {
