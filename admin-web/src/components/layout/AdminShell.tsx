@@ -49,6 +49,11 @@ export function AdminShell({ activeItem, children, render }: AdminShellProps) {
   const resolvedActiveItem = activeItem || routeToItem[currentRoute] || "dashboard";
 
   const [user, setUser] = useState<DashboardUser | null>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  useEffect(() => {
+    setSidebarOpen(false);
+  }, [pathname]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -79,21 +84,34 @@ export function AdminShell({ activeItem, children, render }: AdminShellProps) {
 
   return (
     <AdminShellContext.Provider value={contextValue}>
-      <div className="flex min-h-screen bg-[#F0F7FF]">
+      <div className="min-h-screen overflow-x-hidden bg-[#F0F7FF] text-slate-900">
+        {sidebarOpen && (
+          <button
+            type="button"
+            aria-label="Close navigation"
+            onClick={() => setSidebarOpen(false)}
+            className="fixed inset-0 z-30 bg-slate-950/35 backdrop-blur-[2px] lg:hidden"
+          />
+        )}
         <Sidebar
           role={dashboard.role}
           activeItem={resolvedActiveItem}
-          onItemClick={() => undefined}
+          onItemClick={() => setSidebarOpen(false)}
+          isOpen={sidebarOpen}
+          onClose={() => setSidebarOpen(false)}
         />
-        <div className="ml-72 flex flex-1 flex-col">
+        <div className="flex min-h-screen min-w-0 flex-col lg:pl-72">
           <TopBar
             userName={displayName}
             profileLabel={dashboard.profileLabel}
             propertyScope={dashboard.propertyScope}
             profilePhotoUrl={user?.profilePhotoUrl}
+            onMenuClick={() => setSidebarOpen(true)}
           />
-          <main className="flex-1 overflow-auto p-6">
-            {render ? render(contextValue) : children}
+          <main className="min-w-0 flex-1 px-3 py-4 sm:px-5 lg:px-6 lg:py-6">
+            <div className="mx-auto w-full max-w-[1480px]">
+              {render ? render(contextValue) : children}
+            </div>
           </main>
         </div>
       </div>

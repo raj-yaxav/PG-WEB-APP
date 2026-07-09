@@ -17,6 +17,8 @@ interface SidebarProps {
   role: DashboardRole;
   activeItem: string;
   onItemClick: (item: string) => void;
+  isOpen?: boolean;
+  onClose?: () => void;
 }
 
 const menuItems = [
@@ -29,7 +31,7 @@ const menuItems = [
   { id: "profile", label: "Profile", icon: "profile", roles: ["owner", "manager", "tenant"] },
 ];
 
-export function Sidebar({ role, activeItem, onItemClick }: SidebarProps) {
+export function Sidebar({ role, activeItem, onItemClick, isOpen = false, onClose }: SidebarProps) {
   const router = useRouter();
   const [loggingOut, setLoggingOut] = useState(false);
   const visibleItems = menuItems.filter((item) => item.roles.includes(role));
@@ -58,22 +60,38 @@ export function Sidebar({ role, activeItem, onItemClick }: SidebarProps) {
   };
 
   return (
-    <aside className="fixed z-10 flex h-full w-72 flex-col border-r border-blue-100 bg-white">
+    <aside
+      className={cn(
+        "fixed inset-y-0 left-0 z-40 flex h-dvh w-[min(18rem,calc(100vw-2rem))] flex-col border-r border-blue-100 bg-white shadow-2xl shadow-blue-950/10 transition-transform duration-300 lg:z-10 lg:w-72 lg:translate-x-0 lg:shadow-none",
+        isOpen ? "translate-x-0" : "-translate-x-full"
+      )}
+      aria-label="Main navigation"
+    >
       {/* Logo */}
-      <div className="px-6 pt-6 pb-4 flex items-center gap-2.5">
-        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600 text-white shadow-sm shadow-blue-200">
+      <div className="flex items-center gap-2.5 px-5 pb-4 pt-5 sm:px-6 sm:pt-6">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-white shadow-sm shadow-blue-200">
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
           </svg>
         </div>
-        <div>
+        <div className="min-w-0 flex-1">
           <h1 className="text-lg font-black text-slate-900">Roommzy</h1>
           <p className="text-[10px] text-slate-400 font-semibold tracking-widest uppercase -mt-0.5">Admin Portal</p>
         </div>
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Close navigation"
+          className="flex h-11 w-11 items-center justify-center rounded-xl text-slate-500 transition hover:bg-blue-50 hover:text-blue-700 lg:hidden"
+        >
+          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
       </div>
 
       {/* Menu Items */}
-      <nav className="flex-1 space-y-1 overflow-y-auto px-4 pt-3">
+      <nav className="flex-1 space-y-1 overflow-y-auto px-3 pt-3 sm:px-4">
         <p className="px-4 pb-1 text-[11px] font-bold uppercase tracking-widest text-slate-400">Menu</p>
         {visibleItems.map((item) => (
           <button
@@ -83,7 +101,7 @@ export function Sidebar({ role, activeItem, onItemClick }: SidebarProps) {
               router.push(routeById[item.id] || "/dashboard");
             }}
             className={cn(
-              "flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition-all duration-200",
+              "flex min-h-12 w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm font-semibold transition-all duration-200",
               activeItem === item.id
                 ? "bg-blue-600 text-white shadow-md shadow-blue-200"
                 : "text-slate-600 hover:bg-blue-50 hover:text-blue-700"
@@ -96,7 +114,7 @@ export function Sidebar({ role, activeItem, onItemClick }: SidebarProps) {
       </nav>
 
       {/* Bottom plan/usage card */}
-      <div className="px-4 pb-4">
+      <div className="px-3 pb-4 sm:px-4">
         <div className="relative overflow-hidden rounded-2xl bg-[#E2F0FF] p-4 text-slate-900 shadow-[8px_10px_24px_rgba(30,64,175,0.12)]">
           <div className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full bg-blue-500/10 blur-2xl" />
           <div className="relative flex items-center gap-2">
@@ -124,7 +142,7 @@ export function Sidebar({ role, activeItem, onItemClick }: SidebarProps) {
       </div>
 
       {/* Account Actions */}
-      <div className="grid grid-cols-2 gap-2 border-t border-blue-100 p-4">
+      <div className="grid grid-cols-2 gap-2 border-t border-blue-100 p-3 sm:p-4">
         <button
           type="button"
           onClick={() => router.push("/settings")}

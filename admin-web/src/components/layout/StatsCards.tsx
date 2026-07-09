@@ -11,7 +11,7 @@ import type { StatCardData } from "@/app/(admin)/dashboard/dashboardData";
 
 export function StatsCards({ stats }: { stats: StatCardData[] }) {
   return (
-    <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
+    <div className="grid grid-cols-1 gap-3 min-[420px]:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 lg:gap-4">
       {stats.map((stat) => (
         <div key={stat.id} className="stat-card">
           <div className="mb-3 flex items-start justify-between">
@@ -29,7 +29,7 @@ export function StatsCards({ stats }: { stats: StatCardData[] }) {
               </span>
             )}
           </div>
-          <p className={`text-2xl font-bold ${stat.valueColor || "text-slate-800"}`}>
+          <p className={`break-words text-2xl font-bold ${stat.valueColor || "text-slate-800"}`}>
             {stat.value}
           </p>
           <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mt-1">

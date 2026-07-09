@@ -20,9 +20,9 @@ export function OccupancyStatus({
   return (
     <div className="dashboard-card p-6">
       {/* Header */}
-      <div className="flex items-center justify-between mb-2">
+      <div className="mb-2 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h2 className="text-lg font-bold text-slate-800">{title}</h2>
-        <div className="flex items-center gap-4 text-xs">
+        <div className="flex flex-wrap items-center gap-3 text-xs sm:gap-4">
           <div className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded-full bg-indigo-600" />
             <span className="text-slate-500 font-medium">OCCUPIED</span>
@@ -36,14 +36,14 @@ export function OccupancyStatus({
       <p className="text-sm text-slate-500 mb-4">{subtitle}</p>
 
       {/* Action Buttons */}
-      {role !== "tenant" && <div className="flex gap-3 mb-4">
-        <button className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
+      {role !== "tenant" && <div className="mb-4 flex flex-col gap-3 min-[420px]:flex-row">
+        <button className="flex min-h-11 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50">
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
           </svg>
           Advanced Filters
         </button>
-        <button className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
+        <button className="flex min-h-11 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50">
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
           </svg>
@@ -52,7 +52,7 @@ export function OccupancyStatus({
       </div>}
 
       {/* Warning Banner */}
-      {role !== "tenant" && <div className="flex items-center gap-3 p-3 mb-6 bg-red-50 border border-red-100 rounded-lg">
+      {role !== "tenant" && <div className="mb-6 flex flex-col gap-3 rounded-lg border border-red-100 bg-red-50 p-3 min-[420px]:flex-row min-[420px]:items-center">
         <svg className="w-5 h-5 text-red-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
