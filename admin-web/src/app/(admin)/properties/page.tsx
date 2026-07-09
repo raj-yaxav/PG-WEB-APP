@@ -150,6 +150,14 @@ export default function PropertiesPage() {
       setError("Property name is required");
       return;
     }
+    if (step === 2 && form.pincode.trim() && !/^[1-9][0-9]{5}$/.test(form.pincode.trim())) {
+      setError("Enter a valid 6 digit pincode");
+      return;
+    }
+    if (step === 3 && form.contactPhone.trim() && !/^[0-9+\-\s()]{8,15}$/.test(form.contactPhone.trim())) {
+      setError("Enter a valid contact phone number");
+      return;
+    }
     setError("");
     setStep((current) => Math.min(current + 1, STEPS.length));
   }
@@ -166,6 +174,16 @@ export default function PropertiesPage() {
     if (!form.name.trim()) {
       setError("Property name is required");
       setStep(1);
+      return;
+    }
+    if (form.pincode.trim() && !/^[1-9][0-9]{5}$/.test(form.pincode.trim())) {
+      setError("Enter a valid 6 digit pincode");
+      setStep(2);
+      return;
+    }
+    if (form.contactPhone.trim() && !/^[0-9+\-\s()]{8,15}$/.test(form.contactPhone.trim())) {
+      setError("Enter a valid contact phone number");
+      setStep(3);
       return;
     }
 
@@ -222,19 +240,22 @@ export default function PropertiesPage() {
   return (
     <AdminShell activeItem="properties">
       <div className="space-y-6">
-        <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.22em] text-indigo-600">Owner Workspace</p>
-            <h1 className="mt-2 text-3xl font-black tracking-tight text-slate-900">Properties</h1>
-            <p className="mt-1 text-sm text-slate-500">Create and manage PG/hostel branches.</p>
-          </div>
+        <header className="relative overflow-hidden rounded-[28px] border border-blue-100 bg-[#B9D9FA] p-5 shadow-[12px_16px_34px_rgba(30,64,175,0.14),inset_8px_8px_18px_rgba(255,255,255,0.45),inset_-10px_-10px_20px_rgba(37,99,235,0.10)] sm:p-6">
+          <div className="pointer-events-none absolute -right-16 -top-20 h-44 w-44 rounded-full bg-white/35 blur-2xl" />
+          <div className="relative flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.22em] text-blue-800">Owner Workspace</p>
+              <h1 className="mt-2 text-3xl font-black tracking-tight text-slate-900">Properties</h1>
+              <p className="mt-1 max-w-2xl text-sm font-semibold leading-6 text-slate-700">Create, edit, deactivate, and safely delete PG/hostel branches.</p>
+            </div>
           <button
             type="button"
             onClick={openCreateForm}
-            className="h-11 rounded-lg bg-indigo-600 px-5 text-sm font-bold text-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-indigo-700 hover:shadow-lg hover:shadow-indigo-200"
+            className="inline-flex min-h-11 items-center justify-center rounded-2xl bg-blue-700 px-5 text-sm font-black text-white shadow-[8px_10px_22px_rgba(29,78,216,0.28)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-200"
           >
             + Add Property
           </button>
+          </div>
         </header>
 
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
@@ -254,21 +275,21 @@ export default function PropertiesPage() {
           </div>
         )}
 
-        <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <section className="rounded-[24px] border border-blue-100 bg-[#E2F0FF] p-4 shadow-[10px_12px_28px_rgba(30,64,175,0.10),inset_7px_7px_16px_rgba(255,255,255,0.65),inset_-8px_-8px_18px_rgba(37,99,235,0.08)] sm:p-5">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <h2 className="text-lg font-bold text-slate-900">Property List</h2>
-            <div className="flex flex-col gap-3 sm:flex-row">
+            <div className="grid gap-3 sm:grid-cols-2">
               <input
                 type="search"
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
                 placeholder="Search name or city"
-                className="h-10 rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition focus:border-indigo-500 focus:bg-white focus:ring-4 focus:ring-indigo-100"
+                className="h-11 rounded-xl border border-blue-100 bg-white/80 px-3 text-sm outline-none transition focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100"
               />
               <select
                 value={statusFilter}
                 onChange={(event) => setStatusFilter(event.target.value)}
-                className="h-10 rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition focus:border-indigo-500 focus:bg-white focus:ring-4 focus:ring-indigo-100"
+                className="h-11 rounded-xl border border-blue-100 bg-white/80 px-3 text-sm outline-none transition focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100"
               >
                 <option value="">All Status</option>
                 <option value="active">Active</option>
@@ -281,8 +302,15 @@ export default function PropertiesPage() {
             {loading ? (
               Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-44 animate-pulse rounded-2xl bg-slate-100" />)
             ) : filteredProperties.length === 0 ? (
-              <div className="col-span-full rounded-2xl border border-dashed border-slate-300 bg-slate-50 py-12 text-center text-sm text-slate-500">
-                No properties found.
+              <div className="col-span-full rounded-2xl border border-dashed border-blue-200 bg-white/70 px-5 py-12 text-center text-sm text-slate-500">
+                <p className="font-bold text-slate-700">No properties found.</p>
+                <button
+                  type="button"
+                  onClick={openCreateForm}
+                  className="mt-4 inline-flex min-h-11 items-center justify-center rounded-xl bg-blue-700 px-5 text-sm font-black text-white transition hover:bg-blue-800"
+                >
+                  Add first property
+                </button>
               </div>
             ) : (
               filteredProperties.map((property, index) => {
@@ -291,45 +319,25 @@ export default function PropertiesPage() {
                 return (
                   <div
                     key={property._id}
-                    className="group relative overflow-hidden rounded-2xl border-2 border-slate-100 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:shadow-2xl"
+                    className="group relative overflow-hidden rounded-2xl border border-blue-100 bg-white/90 p-4 shadow-[8px_10px_22px_rgba(30,64,175,0.08)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[10px_14px_26px_rgba(30,64,175,0.12)] sm:p-5"
                     style={{ "--tint-ring": tint.ring } as React.CSSProperties}
                     onMouseEnter={(e) => (e.currentTarget.style.borderColor = tint.ring)}
                     onMouseLeave={(e) => (e.currentTarget.style.borderColor = "")}
                   >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex items-center gap-3">
+                    <div className="flex flex-col gap-3 min-[480px]:flex-row min-[480px]:items-start min-[480px]:justify-between">
+                      <div className="flex min-w-0 items-center gap-3">
                         <div
                           className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-sm font-black transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3"
                           style={{ backgroundColor: tint.bg, color: tint.text }}
                         >
                           {initials}
                         </div>
-                        <div>
-                          <p className="text-base font-bold text-slate-800">{property.name}</p>
-                          <p className="mt-0.5 text-xs text-slate-400">{property.address || "No address added"}</p>
+                        <div className="min-w-0">
+                          <p className="truncate text-base font-bold text-slate-800">{property.name}</p>
+                          <p className="mt-0.5 line-clamp-2 text-xs text-slate-400">{property.address || "No address added"}</p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-1.5">
-                        <button
-                          type="button"
-                          onClick={() => openEditForm(property)}
-                          className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 opacity-0 transition-all duration-200 hover:bg-indigo-50 hover:text-indigo-600 group-hover:opacity-100"
-                          title="Edit property"
-                        >
-                          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                          </svg>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteProperty(property._id, property.name)}
-                          className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 opacity-0 transition-all duration-200 hover:bg-red-50 hover:text-red-600 group-hover:opacity-100"
-                          title="Delete property"
-                        >
-                          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                          </svg>
-                        </button>
+                      <div className="flex flex-wrap items-center gap-2">
                         <span
                           className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-bold capitalize ${
                             property.status === "active" ? "bg-green-100 text-green-700" : "bg-slate-100 text-slate-500"
@@ -337,6 +345,28 @@ export default function PropertiesPage() {
                         >
                           {property.status}
                         </span>
+                        <button
+                          type="button"
+                          onClick={() => openEditForm(property)}
+                          className="inline-flex min-h-10 items-center justify-center rounded-xl border border-blue-100 bg-blue-50 px-3 text-xs font-black text-blue-700 transition-all duration-200 hover:bg-blue-100 focus:outline-none focus:ring-4 focus:ring-blue-100"
+                          title="Edit property"
+                        >
+                          <svg className="mr-1.5 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                          </svg>
+                          Edit
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteProperty(property._id, property.name)}
+                          className="inline-flex min-h-10 items-center justify-center rounded-xl border border-red-100 bg-red-50 px-3 text-xs font-black text-red-600 transition-all duration-200 hover:bg-red-100 focus:outline-none focus:ring-4 focus:ring-red-100"
+                          title="Delete property"
+                        >
+                          <svg className="mr-1.5 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                          Delete
+                        </button>
                       </div>
                     </div>
 
@@ -381,30 +411,33 @@ export default function PropertiesPage() {
 
       {/* Multi-step Add Property Modal */}
       {showForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4">
-          <div className="w-full max-w-lg rounded-2xl bg-white shadow-2xl">
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-900/50 p-0 backdrop-blur-sm sm:items-center sm:p-4">
+          <div className="flex max-h-[calc(100svh-0.75rem)] w-full max-w-lg flex-col overflow-hidden rounded-t-[28px] bg-white shadow-2xl sm:max-h-[calc(100svh-2rem)] sm:rounded-[28px]">
             {/* Modal header */}
-            <div className="flex items-start justify-between border-b border-slate-100 p-5">
+            <div className="shrink-0 border-b border-blue-100 bg-[#E2F0FF] p-4 sm:p-5">
+              <div className="flex items-start justify-between gap-3">
               <div className="flex items-start gap-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-white text-blue-700 shadow-[inset_4px_4px_10px_rgba(191,219,254,0.55)]">
                   <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5" />
                   </svg>
                 </div>
-                <div>
+                <div className="min-w-0">
                   <h2 className="text-base font-bold text-slate-900">{editingId ? "Edit Property" : "Add Property"}</h2>
-                  <p className="text-xs text-slate-500">{editingId ? "Update your property details." : "Add a new PG/hostel branch to your workspace."}</p>
+                  <p className="mt-0.5 text-xs font-semibold text-slate-500">{editingId ? "Update your property details." : "Add a new PG/hostel branch to your workspace."}</p>
                 </div>
               </div>
-              <button onClick={closeForm} className="rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600">
+              <button onClick={closeForm} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-slate-500 transition hover:bg-white hover:text-slate-700" aria-label="Close property form">
                 <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
+              </div>
             </div>
 
             {/* Step indicator */}
-            <div className="flex items-center justify-between px-6 pt-5">
+            <div className="shrink-0 overflow-x-auto px-4 pt-4 sm:px-6 sm:pt-5">
+              <div className="flex min-w-[420px] items-center justify-between">
               {STEPS.map((s, i) => (
                 <div key={s.id} className="flex flex-1 items-center">
                   <div className="flex flex-col items-center gap-1.5">
@@ -426,10 +459,11 @@ export default function PropertiesPage() {
                   )}
                 </div>
               ))}
+              </div>
             </div>
 
             {/* Step body */}
-            <div className="max-h-[55vh] overflow-y-auto px-6 py-6">
+            <div className="min-h-0 flex-1 overflow-y-auto px-4 py-5 sm:px-6 sm:py-6">
               {error && <div className="mb-4 rounded-lg border-l-4 border-l-red-500 bg-red-50 px-4 py-2.5 text-sm text-red-700">{error}</div>}
 
               {step === 1 && (
@@ -442,7 +476,7 @@ export default function PropertiesPage() {
                       onChange={(event) => setForm((c) => ({ ...c, description: event.target.value }))}
                       placeholder="Fully furnished PG with meals, WiFi, and 24x7 security."
                       rows={3}
-                      className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none transition placeholder:text-slate-400 focus:border-indigo-500 focus:bg-white focus:ring-4 focus:ring-indigo-100"
+                      className="w-full rounded-xl border border-blue-100 bg-blue-50/60 px-3 py-2.5 text-sm outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100"
                     />
                     <span className="mt-1.5 block text-xs text-slate-400">Give your property a short and clear description.</span>
                   </label>
@@ -461,7 +495,7 @@ export default function PropertiesPage() {
                       onChange={(event) => setForm((c) => ({ ...c, address: event.target.value }))}
                       placeholder="Full property address"
                       rows={3}
-                      className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none transition placeholder:text-slate-400 focus:border-indigo-500 focus:bg-white focus:ring-4 focus:ring-indigo-100"
+                      className="w-full rounded-xl border border-blue-100 bg-blue-50/60 px-3 py-2.5 text-sm outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100"
                     />
                   </label>
                 </div>
@@ -519,28 +553,28 @@ export default function PropertiesPage() {
             </div>
 
             {/* Footer */}
-            <div className="flex items-center justify-between border-t border-slate-100 p-5">
-              <button onClick={closeForm} className="h-11 rounded-lg border border-slate-200 px-5 text-sm font-bold text-slate-600 transition hover:bg-slate-50">
-                Save as draft
+            <div className="flex shrink-0 flex-col gap-3 border-t border-blue-100 bg-white p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
+              <button onClick={closeForm} className="h-11 rounded-xl border border-slate-200 px-5 text-sm font-bold text-slate-600 transition hover:bg-slate-50">
+                Cancel
               </button>
-              <div className="flex gap-2">
+              <div className="grid gap-2 sm:flex">
                 {step > 1 && (
-                  <button onClick={goBack} className="h-11 rounded-lg border border-slate-200 px-5 text-sm font-bold text-slate-600 transition hover:bg-slate-50">
+                  <button onClick={goBack} className="h-11 rounded-xl border border-slate-200 px-5 text-sm font-bold text-slate-600 transition hover:bg-slate-50">
                     Back
                   </button>
                 )}
                 {step < STEPS.length ? (
                   <button
                     onClick={goNext}
-                    className="h-11 rounded-lg bg-indigo-600 px-5 text-sm font-bold text-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-indigo-700 hover:shadow-lg hover:shadow-indigo-200"
+                    className="h-11 rounded-xl bg-blue-700 px-5 text-sm font-bold text-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-blue-800 hover:shadow-lg hover:shadow-blue-200"
                   >
-                    Next step →
+                    Next step
                   </button>
                 ) : (
                   <button
                     onClick={handleSaveProperty}
                     disabled={saving}
-                    className="h-11 rounded-lg bg-indigo-600 px-5 text-sm font-bold text-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-indigo-700 hover:shadow-lg hover:shadow-indigo-200 disabled:opacity-70"
+                    className="h-11 rounded-xl bg-blue-700 px-5 text-sm font-bold text-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-blue-800 hover:shadow-lg hover:shadow-blue-200 disabled:opacity-70"
                   >
                     {saving ? "Saving..." : editingId ? "Update Property" : "Save Property"}
                   </button>
@@ -586,7 +620,7 @@ function Field({
         value={value}
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
-        className="h-11 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition placeholder:text-slate-400 focus:border-indigo-500 focus:bg-white focus:ring-4 focus:ring-indigo-100"
+        className="h-11 w-full rounded-xl border border-blue-100 bg-blue-50/60 px-3 text-sm outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100"
       />
       {hint && <span className="mt-1.5 block text-xs text-slate-400">{hint}</span>}
     </label>

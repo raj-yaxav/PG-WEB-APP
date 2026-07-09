@@ -64,7 +64,7 @@ export function Sidebar({ role, activeItem, onItemClick, isOpen = false, onClose
   return (
     <aside
       className={cn(
-        "fixed bottom-0 left-0 top-0 z-40 flex h-screen max-h-screen w-[min(18rem,calc(100vw-2rem))] flex-col overflow-hidden border-r border-blue-100 bg-white shadow-2xl shadow-blue-950/10 transition-transform duration-300 will-change-transform lg:z-30 lg:w-72 lg:translate-x-0 lg:shadow-none",
+        "fixed bottom-0 left-0 top-0 z-40 flex h-[100svh] max-h-[100svh] w-[min(18rem,calc(100vw-2rem))] flex-col overflow-hidden border-r border-blue-100 bg-white shadow-2xl shadow-blue-950/10 transition-transform duration-300 will-change-transform lg:z-30 lg:h-screen lg:max-h-screen lg:w-72 lg:translate-x-0 lg:transform-none lg:transition-none lg:shadow-none lg:[will-change:auto]",
         isOpen ? "translate-x-0" : "-translate-x-full"
       )}
       aria-label="Main navigation"
