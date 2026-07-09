@@ -256,6 +256,15 @@ export default function LoginPage() {
             </button>
           </form>
 
+          <a
+            href="/downloads/roomzy.apk"
+            download
+            className="mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-2xl border border-blue-200 bg-white/78 text-sm font-black text-blue-700 shadow-[8px_10px_24px_rgba(30,64,175,0.10),inset_0_1px_0_rgba(255,255,255,0.92)] transition hover:-translate-y-0.5 hover:border-blue-300 hover:bg-white hover:text-blue-800"
+          >
+            <DownloadIcon />
+            Download Android APK
+          </a>
+
           <div className="mt-6 rounded-2xl border border-blue-100 bg-[#E7F3FF] px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.75)]">
             <p className="text-sm font-black text-blue-950">Account access rule</p>
             <p className="mt-1 text-xs font-semibold leading-5 text-blue-700">
@@ -333,6 +342,15 @@ function EyeOffIcon() {
       <path strokeLinecap="round" strokeLinejoin="round" d="M3 3l18 18" />
       <path strokeLinecap="round" strokeLinejoin="round" d="M10.58 10.58A2 2 0 0012 14a2 2 0 001.42-.58" />
       <path strokeLinecap="round" strokeLinejoin="round" d="M9.88 5.62A9.77 9.77 0 0112 5.25c6 0 9.75 6.75 9.75 6.75a18.9 18.9 0 01-2.48 3.27M6.53 6.53C3.82 8.35 2.25 12 2.25 12s3.75 6.75 9.75 6.75c1.47 0 2.8-.4 3.98-1.02" />
+    </svg>
+  );
+}
+
+function DownloadIcon() {
+  return (
+    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2} aria-hidden="true">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v11m0 0l-4-4m4 4l4-4" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M5 17.5v1.25A2.25 2.25 0 007.25 21h9.5A2.25 2.25 0 0019 18.75V17.5" />
     </svg>
   );
 }

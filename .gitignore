@@ -25,6 +25,8 @@ coverage/
 # Native/mobile generated output
 **/ios/
 **/android/
+.android-sdk/
+cmdline-tools.zip
 *.jks
 *.p8
 *.p12
